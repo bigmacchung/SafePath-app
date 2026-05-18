@@ -76,7 +76,7 @@ flowchart TB
 | Data cleaning | Filter, geocode, validate, save to standard formats | Notebooks in `notebooks/`, `src/data/clean_streetlights.py` |
 | Feature engineering | Attach per-edge scores (crime, walkability, infrastructure) to the OSM graph | `notebooks/scoring-engine.ipynb` |
 | Routing engine | Compute route costs, run shortest path three times, display comparison | `notebooks/safety-score-edge.ipynb` |
-| Web interface | Streamlit app for user interaction | `app/` (planned) |
+| Web interface | Streamlit app with map display (Google Maps or Leaflet API) | `app/` (planned) |
 
 ---
 
@@ -89,6 +89,8 @@ flowchart TB
 | Census TIGER 2020 | [Census Bureau](https://www2.census.gov/geo/tiger/TIGER2020/BG/tl_2020_06_bg.zip) | Used in merge | (merged into walkability file) |
 | City of SD Streetlights | [ArcGIS REST layer](https://webmaps.sandiego.gov/arcgis/rest/services/Planning/PLN_Mobility/MapServer/1) | Cleaned | `streetlights_processed.geojson` |
 | OpenStreetMap | [OSMnx API](https://osmnx.readthedocs.io) | Downloaded | `sd_walk_graph.graphml` |
+| UCSD Crime Log | [alexgaoth.com/UCSD_Crimes](http://alexgaoth.com/UCSD_Crimes) | Not yet integrated | -- |
+| UCSD Annual Security Report | [police.ucsd.edu (PDF)](https://www.police.ucsd.edu/docs/annualclery.pdf) | Aggregates extracted | `ucsd_clery_stats_2022_2024.csv` |
 | Buffered bike lanes | [data.sandiego.gov](https://data.sandiego.gov/datasets/bike-route-lines/) | Deferred to future version | -- |
 
 **SDPD Calls for Service.** One row per police call with date, time, call type, priority, disposition, and address. We filter to confirmed pedestrian-relevant incidents, then geocode addresses to lat/lon points. Reference codebooks in [`docs/references/`](references/).
@@ -98,6 +100,18 @@ flowchart TB
 **City Streetlights.** Point geometry for every city-maintained light. Snapshot 2026-04-30: 56,049 raw features, 55,506 active after filtering. Full cleaning report: [`docs/data/streetlights/`](data/streetlights/). No additional public streetlight data exists for this region -- see [`EXTERNAL_DATASETS_AUDIT.md`](data/streetlights/EXTERNAL_DATASETS_AUDIT.md) for the 9-source investigation.
 
 **OpenStreetMap.** San Diego walking network: 684,012 edges. Every other dataset gets spatially joined to OSM edges so the routing engine reads scores from one graph.
+
+**UCSD Crime Log.** Scraped daily police log from UCSD PD. Not yet integrated into scoring -- intended as a campus-specific supplement to SDPD data. See [`docs/data/ucsd_crime/00_NEXT_SESSION.md`](data/ucsd_crime/00_NEXT_SESSION.md) for status.
+
+**UCSD Annual Security Report.** Clery Act statistics (2022-2024) extracted from the UCSD 2025 Annual Security & Fire Safety Report. 66 rows (22 offenses x 3 years). Used as a **validator** for the daily-log scrape, not as a point feature for scoring.
+
+**Potential future data sources** (from the [original design doc](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing)):
+
+- NASA VIIRS nighttime imagery (satellite-based lighting proxy)
+- Illuminated commercial corridors / Yelp density / POI proxies
+- Buffered bike/scooter lanes
+- UCSD and SDSU campus data (pedestrian volumes, institutional GIS layers)
+- Transit stops (GTFS) and traffic signal crossings
 
 All datasets are snapshots, not live feeds.
 

@@ -12,10 +12,10 @@ Past weekly snapshots live in [`status/`](status/). This file is the single sour
 
 | Person | Task | Reference | Status |
 | - | - | - | - |
-| Matthew | Design the weighted score for safety + convenience | [`design_document.md`](design_document.md) §7-8 | in progress |
-| Max | ~~Clean bike lane dataset~~ (deferred to future version) | -- | deferred |
-| Ruhan | Feature engineering + initial scoring on sample routes (now includes lighting) | [`design_document.md`](design_document.md) §5-6 | not started |
-| Ajay | Compare how different weights change route results | [`design_document.md`](design_document.md) §7 | blocked on Matthew |
+| Matthew | Streetlights: combine road score + light score; add timing to routes | [`design_document.md`](design_document.md) §5-6 | in progress |
+| Max | Double-check streetlight coverage; finalize safety scoring questions for app UX; UCSD campus crime status | [`design_document.md`](design_document.md) §5, §10 | in progress |
+| Ruhan | Streamlit frontend: template design, layout, color scheme | `app/` (planned) | not started |
+| Ajay | Sunset/sunrise timing (suntime package); balanced route: safety score cutoff + fastest from there; test 5 start/end pairs and screenshot results | [`design_document.md`](design_document.md) §7 | in progress |
 
 ## Big picture
 
@@ -34,8 +34,9 @@ Crime, walkability, and street lights are cleaned. Scoring engine is functional 
 
 ## In progress
 
-1. **Matthew** is drafting the weighting between crime, walkability, lighting, and road class.
-2. **Ruhan** is wiring up the OSM walking graph and attaching crime + walkability features to a small test area. Lighting (L1 from [`FEATURE_CONTRACT.md`](data/streetlights/FEATURE_CONTRACT.md)) can be added on the same slice now that the source data is ready.
+1. **Matthew** is combining streetlights (road score + light score: 30% of edges have real light data, 70% use road fallback) and adding route timing.
+2. **Ruhan** is building the Streamlit frontend. First step: design a template with features, color scheme, layout, and pop-up interactions. Prompt will be shared on Discord for team input.
+3. **Ajay** is implementing sunset/sunrise detection (suntime package) and testing balanced route logic (safety score cutoff approach).
 
 ## Not started
 
@@ -45,17 +46,18 @@ Crime, walkability, and street lights are cleaned. Scoring engine is functional 
 
 | Who | What | Blocked on |
 | - | - | - |
-| Ajay | weight comparison | needs at least one draft scoring formula from Matthew |
-| ~~Bike comfort feature~~ | Deferred to future version |
+| ~~Bike comfort feature~~ | Deferred to future version | -- |
 | Lighting L4 (`lighting_data_quality_flag`) | UCSD campus polygon source decision (SANGIS vs. hand-built bbox) |
-| UCSD `campus_incident_score` (F10) | daily UCSD Police log scrape not yet downloaded ([`data/raw/ucsd_police_logs/logs_20260501.csv`](../data/raw/ucsd_police_logs/logs_20260501.csv) is empty) + location-string lookup table not yet built. See [`docs/data/ucsd_crime/00_NEXT_SESSION.md`](data/ucsd_crime/00_NEXT_SESSION.md) §5. |
+| UCSD `campus_incident_score` (F10) | daily UCSD Police log scrape not yet downloaded ([`data/raw/ucsd_police_logs/logs_20260501.csv`](../data/raw/ucsd_police_logs/logs_20260501.csv) is empty) + location-string lookup table not yet built. See [`docs/data/ucsd_crime/00_NEXT_SESSION.md`](data/ucsd_crime/00_NEXT_SESSION.md) §5. If campus crime data not available, mention during presentation as a next step (May 5 meeting). |
+| Accessibility features | Tabled for now but noted as important (May 5 meeting) |
 
 ## Open questions to resolve this week
 
-1. Should the user choose a time of day (day vs night) in the app, or do we infer it from the system clock?
-2. How do we label neighborhoods with very few SDPD calls? Truly safe, or underreported?
-3. What is the default for a missing feature on an edge: drop the term, or use a neutral 0.5? (Lighting already has a built-in `0.5` fallback for UCSD-interior edges.)
-4. UCSD campus polygon: SANGIS layer or hand-built bbox for v0?
+1. Naming: should we say "Safest" or "Extra Caution" for the safest route? (May 12 meeting suggested renaming.)
+2. Balanced route: does it offer enough difference from fastest + safest on short-distance routes? (Vanshika, May 12 meeting)
+3. Pre-route questions for the app: rush level, departure/arrival time, solo vs group, "It's after dark -- use Extra Caution?" pop-up (Max is designing the UX for these, May 12 meeting)
+4. How do we label neighborhoods with very few SDPD calls? Truly safe, or underreported?
+5. UCSD campus polygon: SANGIS layer or hand-built bbox for v0?
 
 ## Pick this up if you have time
 
@@ -65,19 +67,20 @@ These do not need a specific owner. Anyone can grab one.
 | - | - |
 | Open the cleaned `.gpkg` and `.geojson` files in a fresh notebook and call `.explore()` | sanity checks the cleaned data |
 | Spot check 10 random crime addresses against [Google Maps](https://www.google.com/maps) | validates geocoding quality |
-| Sketch the Streamlit result page on paper | unblocks the Week 6 UI work |
+| Draft the Streamlit prompt for Discord (features, color scheme, font, pop-ups, landing page) | gets team input on the UI before Ruhan builds it (May 12 meeting) |
+| Explore the astral package as an alternative to suntime for sunrise/sunset | May 12 meeting suggested this as an option |
 
-## Mentor meetings
+## Team meetings
 
-| Date | Type | Key decisions |
-| - | - | - |
-| 2026-04-14 | Mentor (Vanshika) | Defined safety features; agreed on crime + walkability as core data sources |
-| 2026-04-21 | Mentor (Vanshika) | Reviewed crime cleaning approach; approved disposition filtering strategy |
-| 2026-04-28 | Mentor (Vanshika) | Set team norms (Discord updates, message reactions); reviewed streetlight data strategy |
-| 2026-05-05 | Mentor (Vanshika) | Reviewed scoring engine progress; discussed day/night profile split |
-| 2026-05-12 | Mentor (Vanshika) | Reviewed routing output; approved three-route approach (fastest/safest/balanced); planned Streamlit timeline |
+All meetings are on Zoom with full attendance (Matthew, Max, Ruhan, Ajay, Vanshika). Full minutes are on the team [Google Drive](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing).
 
-All meetings include the full team. Vanshika provides weekly technical direction and reviews each teammate's output before merging.
+| Date | Key topics |
+| - | - |
+| 2026-04-13 (Mon, 6:30-7:30pm) | Kickoff: project overview and roadmap, intro to datasets (OSM, SD crime, POIs), team roles. Decided: meetings move to Tuesdays 9pm, Discord for communication, final product is Streamlit app |
+| 2026-04-21 (Tue, 9:15-9:42pm) | Filter crime and walkability datasets to San Diego, clean and standardize formats, explore datasets to identify key variables. Next: all members set up GitHub + Streamlit |
+| 2026-04-28 (Tue, 9:00-10:00pm) | Assigned work: Matthew (weighted scores), Ruhan (test scoring on sample routes), Max (cleaning remaining datasets), Ajay (comparing weighted scores). Team norms: Discord update after every change, react to every message |
+| 2026-05-05 (Tue, 9:00-10:20pm) | Route options + scoring already generated. Streetlights: only covers ~30% of SD, need fallback variables (Matthew). Sunset timing: use suntime library (Ajay). Balanced route: test 50/50 vs 70/30 splits. User profiles tabled for now. UCSD crime data: check if available (Vanshika/Max) |
+| 2026-05-12 (Tue, 9:00-10:00pm) | Streetlights: combine road + light score (30% real light / 70% road fallback) (Matthew). Sunset timing done (Ajay). Balanced route: use safety score cutoff then take fastest (Ajay). Safety scoring questions finalized (Max). Streamlit frontend: Ruhan to design template. Naming: consider "Extra Caution" instead of "Safest" |
 
 ## Where things live
 
