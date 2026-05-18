@@ -145,7 +145,7 @@ SafePath/
 │   ├── crime-df-preprocessing.ipynb       crime data cleaning
 │   ├── walkability-df-preprocessing.ipynb  walkability cleaning
 │   ├── scoring-engine.ipynb               feature engineering (produces edge scores)
-│   ├── scoring-test.ipynb                 Ruhan's scoring prototype (uses old schema)
+│   ├── scoring-test.ipynb                 scoring validation (imports from src/scoring/)
 │   └── safety-score-edge.ipynb            routing engine (produces 3 routes)
 ├── docs/
 │   ├── design_document.md       data pipeline, scoring, design decisions (main technical doc)
@@ -184,7 +184,7 @@ The first three are also bundled offline in [`docs/references/`](docs/references
 
 ## Team
 
-5 people. Lead: Vanshika. This week's owners are tracked in [`docs/status.md`](docs/status.md).
+Led by Vanshika, 4 students. This week's owners are tracked in [`docs/status.md`](docs/status.md).
 
 ## Where to read more
 

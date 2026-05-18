@@ -220,7 +220,7 @@ Four different formulas exist across the codebase. This is the single most impor
 
 | Location | Composite Score | Cost Formula | Weights |
 |---|---|---|---|
-| **docs/04_scoring_methodology.md** | `w_crime*crime + w_walk*walk + w_light*light + w_bike*bike + w_road*road` (5-term) | `length * (1 + 4 * (1-score))` | "Matthew picks them" — unspecified |
+| **docs/04_scoring_methodology.md** | `w_crime*crime + w_walk*walk + w_light*light + w_bike*bike + w_road*road` (5-term) | `length * (1 + 4 * (1-score))` | weights unspecified in doc |
 | **scoring-test.ipynb** (Ruhan) | `Σ(weight * feature) / Σ(weights)` (profile-based) | `(1 - score/total_weight) * length` | Safety_Day: crime 0.7 + walk 0.1 + road 0.2; Safety_Night: crime 0.5 + light 0.4 + road 0.1; Shortest: walk 0.1 + road 0.1 |
 | **safety-score-edge.ipynb** (Max) — safest route | `W_CRIME*crime + W_WALK*walk + W_STRUCT*infra` (3-term) | `length * (1 + 4 * (1-score))` | Day: crime 0.50 + walk 0.25 + infra 0.25; Night: crime 0.45 + walk 0.25 + infra 0.30 |
 | **safety-score-edge.ipynb** (Max) — balanced route | same as above | `length * (1 + 2 * (1-score))` | same |
@@ -351,7 +351,7 @@ The 1.0 gap in GitHub Repo is Version Control Hygiene (1.5/2) -- limited commit 
 
 **Evidence:** Status said "end of Week 4 → moving into Week 5." Scoring engine is functional, routing produces validated routes -- that is Week 5-6 work.
 
-**Fix applied:** Updated TL;DR and timestamp to "end of Week 6 (2026-05-17)". Added 5 mentor meeting entries.
+**Fix applied:** Updated TL;DR and timestamp to "end of Week 6 (2026-05-17)". Added 5 team meeting summaries with dates, attendance, and key topics sourced from the team's [meeting minutes](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing).
 
 ### Finding 13: SOURCE_METADATA.yaml Placeholder (LOW — FIXED)
 
@@ -374,7 +374,7 @@ The 1.0 gap in GitHub Repo is Version Control Hygiene (1.5/2) -- limited commit 
 | # | File | Change | Reason |
 |---|---|---|---|
 | 1 | `README.md` | Added environment setup (conda + pip), data download table (5 files), replication steps, known limitations section | Rubric: Setup & Deployment (3 pts) + Coverage (2 pts) |
-| 2 | `docs/status.md` | Updated TL;DR and timeline to Week 5-6; added 5 mentor meetings with dates and decisions | Rubric: Meeting Logs (5 pts) |
+| 2 | `docs/status.md` | Updated TL;DR and timeline to Week 5-6; added 5 team meeting summaries sourced from meeting minutes | Rubric: Meeting Logs (5 pts) |
 | 3 | `data/raw/streetlights/SOURCE_METADATA.yaml` | Replaced placeholder notes with actual observations | Professional documentation standard |
 | 4 | `docs/data/streetlights/EXTERNAL_DATASETS_AUDIT.md` | Restored from previous version (removed by teammate) | 9-source audit justifying 68.8% proxy coverage ceiling |
 | 5 | `docs/design_document.md` | Created consolidated design doc with 3 Mermaid diagrams, 6 design decisions | Rubric: Design Document (5 pts) |

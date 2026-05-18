@@ -2,7 +2,7 @@
 
 > **TL;DR.** Crime, walkability, and street lights are cleaned. Scoring engine is functional with day/night profiles. Routing produces three distinct routes (fastest, safest, balanced) validated on 6+ test pairs across San Diego. Next: Ruhan builds Streamlit frontend; team prepares final demo and presentation. Bike lane data deferred to a future version.
 
-> **Team norms ([28 April meeting](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing)):** post a Discord update after every meaningful change, and react to every message in `#safepath` so the sender knows it was seen.
+> **Team norms ([28 April meeting](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing)):** post a Discord update after every meaningful change, and react to every message so the sender knows it was seen.
 
 _Last updated: end of Week 6 (2026-05-17). Previous snapshot: [`status/week4_status.md`](status/week4_status.md)._
 
@@ -15,7 +15,7 @@ Past weekly snapshots live in [`status/`](status/). This file is the single sour
 | Matthew | Streetlights: combine road score + light score; add timing to routes | [`design_document.md`](design_document.md) §5-6 | in progress |
 | Max | Double-check streetlight coverage; finalize safety scoring questions for app UX; UCSD campus crime status | [`design_document.md`](design_document.md) §5, §10 | in progress |
 | Ruhan | Streamlit frontend: template design, layout, color scheme | `app/` (planned) | not started |
-| Ajay | Sunset/sunrise timing (suntime package); balanced route: safety score cutoff + fastest from there; test 5 start/end pairs and screenshot results | [`design_document.md`](design_document.md) §7 | in progress |
+| Ajay | Balanced route: safety score cutoff + fastest from there; test 5 start/end pairs and screenshot results on Discord | [`design_document.md`](design_document.md) §7 | in progress |
 
 ## Big picture
 
@@ -28,7 +28,7 @@ Crime, walkability, and street lights are cleaned. Scoring engine is functional 
 | Crime preprocessing | [`crime-df-preprocessing.ipynb`](../notebooks/crime-df-preprocessing.ipynb) → `crime_final_gdf.gpkg` |
 | Walkability preprocessing | [`walkability-df-preprocessing.ipynb`](../notebooks/walkability-df-preprocessing.ipynb) → `walkability_final_gdf.gpkg` |
 | Streetlight cleaning + validation | `src/data/get_streetlights.py` + `src/data/clean_streetlights.py` → `data/processed/streetlights/streetlights_processed.geojson` (55,506 active lights, validation + tie-out PASS, snapshot 2026-04-30) |
-| UCSD Clery aggregates extracted + validated | `data/processed/ucsd_clery/ucsd_clery_stats_2022_2024.csv` (66 rows: 22 offenses × 3 years, all 5/5 validation + 5/5 source-tieout PASS). Source: UCSD Annual Security & Fire Safety Report 2025 §XVI. Use as **validator** for the daily-log scrape, not as a point feature — see [`docs/data/ucsd_crime/00_NEXT_SESSION.md`](data/ucsd_crime/00_NEXT_SESSION.md) §4. |
+| UCSD Clery aggregates extracted + validated | `data/processed/ucsd_clery/ucsd_clery_stats_2022_2024.csv` (66 rows: 22 offenses × 3 years, all 5/5 validation + 5/5 source-tieout PASS). Source: UCSD Annual Security & Fire Safety Report 2025 §XVI. Use as **validator** for the daily-log scrape, not as a point feature. |
 | Crime + walkability files shared | team [Google Drive](https://drive.google.com/drive/folders/1DSxQlvn6lq-D_tax9uDd42b5rNIIyQQ8?usp=sharing) |
 | Technical documentation consolidated | `docs/design_document.md` (data pipeline, scoring, design decisions) |
 
@@ -36,7 +36,7 @@ Crime, walkability, and street lights are cleaned. Scoring engine is functional 
 
 1. **Matthew** is combining streetlights (road score + light score: 30% of edges have real light data, 70% use road fallback) and adding route timing.
 2. **Ruhan** is building the Streamlit frontend. First step: design a template with features, color scheme, layout, and pop-up interactions. Prompt will be shared on Discord for team input.
-3. **Ajay** is implementing sunset/sunrise detection (suntime package) and testing balanced route logic (safety score cutoff approach).
+3. **Ajay** has initial sunset/sunrise detection working (suntime package; team is also considering the [astral](https://astral.readthedocs.io/en/latest/package.html) package as an alternative). Now testing balanced route logic (safety score cutoff approach) and running test routes across different start/end pairs.
 
 ## Not started
 
@@ -48,8 +48,8 @@ Crime, walkability, and street lights are cleaned. Scoring engine is functional 
 | - | - | - |
 | ~~Bike comfort feature~~ | Deferred to future version | -- |
 | Lighting L4 (`lighting_data_quality_flag`) | UCSD campus polygon source decision (SANGIS vs. hand-built bbox) |
-| UCSD `campus_incident_score` (F10) | daily UCSD Police log scrape not yet downloaded ([`data/raw/ucsd_police_logs/logs_20260501.csv`](../data/raw/ucsd_police_logs/logs_20260501.csv) is empty) + location-string lookup table not yet built. See [`docs/data/ucsd_crime/00_NEXT_SESSION.md`](data/ucsd_crime/00_NEXT_SESSION.md) §5. If campus crime data not available, mention during presentation as a next step (May 5 meeting). |
-| Accessibility features | Tabled for now but noted as important (May 5 meeting) |
+| UCSD `campus_incident_score` (F10) | daily UCSD Police log scrape not yet downloaded ([`data/raw/ucsd_police_logs/logs_20260501.csv`](../data/raw/ucsd_police_logs/logs_20260501.csv) is empty) + location-string lookup table not yet built. If campus crime data not available, mention during presentation as a next step (May 12 meeting). |
+| Accessibility features | Tabled for now but noted as important (May 12 meeting). Would increase walkability score weighting. |
 
 ## Open questions to resolve this week
 
@@ -79,8 +79,8 @@ All meetings are on Zoom with full attendance (Matthew, Max, Ruhan, Ajay, Vanshi
 | 2026-04-13 (Mon, 6:30-7:30pm) | Kickoff: project overview and roadmap, intro to datasets (OSM, SD crime, POIs), team roles. Decided: meetings move to Tuesdays 9pm, Discord for communication, final product is Streamlit app |
 | 2026-04-21 (Tue, 9:15-9:42pm) | Filter crime and walkability datasets to San Diego, clean and standardize formats, explore datasets to identify key variables. Next: all members set up GitHub + Streamlit |
 | 2026-04-28 (Tue, 9:00-10:00pm) | Assigned work: Matthew (weighted scores), Ruhan (test scoring on sample routes), Max (cleaning remaining datasets), Ajay (comparing weighted scores). Team norms: Discord update after every change, react to every message |
-| 2026-05-05 (Tue, 9:00-10:20pm) | Route options + scoring already generated. Streetlights: only covers ~30% of SD, need fallback variables (Matthew). Sunset timing: use suntime library (Ajay). Balanced route: test 50/50 vs 70/30 splits. User profiles tabled for now. UCSD crime data: check if available (Vanshika/Max) |
-| 2026-05-12 (Tue, 9:00-10:00pm) | Streetlights: combine road + light score (30% real light / 70% road fallback) (Matthew). Sunset timing done (Ajay). Balanced route: use safety score cutoff then take fastest (Ajay). Safety scoring questions finalized (Max). Streamlit frontend: Ruhan to design template. Naming: consider "Extra Caution" instead of "Safest" |
+| 2026-05-05 (Tue, 9:00-10:20pm) | Route options + scoring already generated. Streetlights: only covers ~30% of SD, need fallback variables (Matthew). Sunset timing: figure out what constitutes night, use a library (Ajay). Balanced route: test 50/50 vs 70/30 splits. User profiles tabled for now. UCSD crime data: confirm if SD data covers UCSD (Vanshika) |
+| 2026-05-12 (Tue, 9:00-10:00pm) | Streetlights: combine road + light score, 30% real light / 70% road fallback (Matthew). Sunset timing: Ajay used suntime package, team considering astral as alternative. Balanced route: use safety score cutoff then take fastest (Ajay). Safety scoring questions for app UX (Max). Streamlit frontend: Ruhan to design template, share prompt on Discord. Naming: consider "Extra Caution" instead of "Safest". If UCSD crime data not available, mention as next step in presentation (Max). Accessibility: tabled but important |
 
 ## Where things live
 
@@ -96,7 +96,7 @@ All meetings are on Zoom with full attendance (Matthew, Max, Ruhan, Ajay, Vanshi
 
 ## Capacity reminder
 
-5 people, roughly 5 to 10 hours each per week. **Plan small.** One file or one notebook per person per week is plenty. Drop a note in Discord when you start something so two people do not pick up the same task.
+4 students + project lead (Vanshika). **Plan small.** One file or one notebook per person per week is plenty. Drop a note in Discord when you start something so two people do not pick up the same task.
 
 ## How to update this file
 

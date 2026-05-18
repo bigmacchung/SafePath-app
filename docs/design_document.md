@@ -3,7 +3,7 @@
 > Data pipeline, scoring methodology, and design rationale for the SafePath route recommendation tool. This is the single technical reference for how the system works.
 
 **Project:** SafePath (DS3 at UC San Diego, Spring 2026)
-**Team:** 5 people. Lead: Vanshika.
+**Team:** Led by Vanshika, 4 students (Matthew, Max, Ruhan, Ajay).
 **Last updated:** 2026-05-18
 
 ---
@@ -101,7 +101,7 @@ flowchart TB
 
 **OpenStreetMap.** San Diego walking network: 684,012 edges. Every other dataset gets spatially joined to OSM edges so the routing engine reads scores from one graph.
 
-**UCSD Crime Log.** Scraped daily police log from UCSD PD. Not yet integrated into scoring -- intended as a campus-specific supplement to SDPD data. See [`docs/data/ucsd_crime/00_NEXT_SESSION.md`](data/ucsd_crime/00_NEXT_SESSION.md) for status.
+**UCSD Crime Log.** Scraped daily police log from UCSD PD. Not yet integrated into scoring -- intended as a campus-specific supplement to SDPD data.
 
 **UCSD Annual Security Report.** Clery Act statistics (2022-2024) extracted from the UCSD 2025 Annual Security & Fire Safety Report. 66 rows (22 offenses x 3 years). Used as a **validator** for the daily-log scrape, not as a point feature for scoring.
 
@@ -197,7 +197,7 @@ All scores follow the convention: **1 = best (safest/most walkable), 0 = worst**
 
 ### How features are computed
 
-**Crime scoring.** Each SDPD incident receives a severity score (0.4 to 3.0 by call type, using a lookup table that combines FBI UCR hierarchy with pedestrian exposure risk) and a time multiplier (1.1 to 1.3x for night incidents involving robbery, assault, battery, or threats; 1.0x otherwise). Combined weight = `severity_score * time_multiplier`. Day = hours 6-20; night = hours 21-5.
+**Crime scoring.** Each SDPD incident receives a severity score (0.4 to 3.0 by call type, using a lookup table that combines FBI UCR hierarchy with pedestrian exposure risk) and a time multiplier (1.1 to 1.3x for night incidents involving robbery, assault, battery, or threats; 1.0x otherwise). Combined weight = `severity_score * time_multiplier`. Day vs. night is determined by sunrise/sunset time using the `suntime` library (see §8).
 
 Per-edge aggregation: buffer the edge geometry (50 m, 100 m, or 150 m in EPSG:3857), spatial join to sum `combined_weight` of all incidents inside the buffer, then normalize:
 
@@ -371,7 +371,7 @@ The original design proposed `length x (1 + 4 x (1 - score))`, which scales unsa
 
 The system uses the actual clock time (via `suntime` library) to automatically select day or night weights. Night mode increases the weight of infrastructure (lighting) from 0.25 to 0.30 and decreases crime weight from 0.50 to 0.45.
 
-**Tradeoff:** The user does not choose day vs. night. Automatic detection is simpler but means the app cannot preview "what would my route look like at 11 PM?" without manual override. May add a toggle in the Streamlit app.
+**Tradeoff:** The user does not choose day vs. night. Automatic detection is simpler but means the app cannot preview "what would my route look like at 11 PM?" without manual override. The May 12 meeting discussed adding a pop-up question ("It's after dark. Do you want to use Extra Caution for this trip?") as a possible override.
 
 ---
 
