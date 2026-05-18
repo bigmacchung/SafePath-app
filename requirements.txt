@@ -20,3 +20,6 @@ seaborn         # statistical visualizations built on top of matplotlib
 
 # App
 streamlit       # web UI framework for the SafePath frontend
+
+# Testing
+pytest          # unit test framework
