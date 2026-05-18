@@ -90,7 +90,7 @@ flowchart TB
 | City of SD Streetlights | [ArcGIS REST layer](https://webmaps.sandiego.gov/arcgis/rest/services/Planning/PLN_Mobility/MapServer/1) | Cleaned | `streetlights_processed.geojson` |
 | OpenStreetMap | [OSMnx API](https://osmnx.readthedocs.io) | Downloaded | `sd_walk_graph.graphml` |
 | UCSD Crime Log | [alexgaoth.com/UCSD_Crimes](http://alexgaoth.com/UCSD_Crimes) | Not yet integrated | -- |
-| UCSD Annual Security Report | [police.ucsd.edu (PDF)](https://www.police.ucsd.edu/docs/annualclery.pdf) | Aggregates extracted | `ucsd_clery_stats_2022_2024.csv` |
+| UCSD Annual Security Report | [police.ucsd.edu (PDF)](https://www.police.ucsd.edu/docs/annualclery.pdf) | Aggregates extracted | not yet committed to repo |
 | Buffered bike lanes | [data.sandiego.gov](https://data.sandiego.gov/datasets/bike-route-lines/) | Deferred to future version | -- |
 
 **SDPD Calls for Service.** One row per police call with date, time, call type, priority, disposition, and address. We filter to confirmed pedestrian-relevant incidents, then geocode addresses to lat/lon points. Reference codebooks in [`docs/references/`](references/).
@@ -110,7 +110,7 @@ flowchart TB
 - NASA VIIRS nighttime imagery (satellite-based lighting proxy)
 - Illuminated commercial corridors / Yelp density / POI proxies
 - Buffered bike/scooter lanes
-- UCSD and SDSU campus data (pedestrian volumes, institutional GIS layers)
+- UCSD and SDSU campus data (crime, pedestrian volumes, section layers)
 - Transit stops (GTFS) and traffic signal crossings
 
 All datasets are snapshots, not live feeds.

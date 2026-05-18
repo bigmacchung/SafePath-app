@@ -239,7 +239,7 @@ Scores below reflect the state of the repo **after all fixes** (documentation co
 
 | # | Section | Criterion | Max | Score | Evidence |
 |---|---|---|---|---|---|
-| 1 | Design Document | Depth and thoroughness | 2 | **2.0** (was 1.0) | `design_document.md` (410 lines): covers architecture, data sources, cleaning pipelines, feature engineering, scoring formulas, routing profiles, 6 design decisions, validation strategy, limitations -- all in one document with 3 Mermaid diagrams |
+| 1 | Design Document | Depth and thoroughness | 2 | **2.0** (was 1.0) | `design_document.md` (424 lines): covers architecture, data sources, cleaning pipelines, feature engineering, scoring formulas, routing profiles, 6 design decisions, validation strategy, limitations -- all in one document with 3 Mermaid diagrams |
 | 1 | Design Document | Design rationale | 1 | **1.0** | 6 explicit design decisions with tradeoff analysis (buffer sizes, normalization, infrastructure scoring, zero-crime treatment, cost multiplier, day/night profiles) |
 | 1 | Design Document | Technical diagrams | 1 | **1.0** (was 0.0) | 3 Mermaid diagrams: system architecture flowchart, scoring pipeline detail (crime + walkability + infrastructure sub-pipelines), routing cost flow (per-edge features to composite cost to three routes) |
 | 1 | Design Document | Clarity and professionalism | 1 | **1.0** | Consistent formatting, clear section numbering, tables for structured data, code blocks for formulas |
@@ -335,7 +335,7 @@ The 1.0 gap in GitHub Repo is Version Control Hygiene (1.5/2) -- limited commit 
 
 **Evidence:** The design doc was only in Google Docs. Rubric scores "Design Document" as an explicit deliverable.
 
-**Fix applied:** Created `docs/design_document.md` (410 lines) covering data sources, cleaning, feature engineering, scoring, routing, design decisions, validation, and limitations.
+**Fix applied:** Created `docs/design_document.md` (424 lines) covering data sources, cleaning, feature engineering, scoring, routing, design decisions, validation, and limitations.
 
 ### Finding 10: No Technical Diagrams (MEDIUM — FIXED)
 
@@ -381,7 +381,7 @@ The 1.0 gap in GitHub Repo is Version Control Hygiene (1.5/2) -- limited commit 
 
 ### Phase 2: Consolidation (fewer files, same coverage)
 
-Merged the 5-step learning path (`00_project_map.md`, `01_data_sources.md`, `02_data_cleaning.md`, `03_feature_engineering.md`, `04_scoring_methodology.md`) and `geospatial-reference.md` into a single `design_document.md` (410 lines). The original structure spread content across 6 files; now one document covers the full pipeline from data sources through routing.
+Merged the 5-step learning path (`00_project_map.md`, `01_data_sources.md`, `02_data_cleaning.md`, `03_feature_engineering.md`, `04_scoring_methodology.md`) and `geospatial-reference.md` into a single `design_document.md` (424 lines). The original structure spread content across 6 files; now one document covers the full pipeline from data sources through routing.
 
 | Files removed | Content now lives in |
 |---|---|
@@ -426,11 +426,11 @@ Merged the 5-step learning path (`00_project_map.md`, `01_data_sources.md`, `02_
 | 3 | ~~Scoring formula inconsistency~~ | ~~3 files~~ | **FIXED** — canonical formula extracted to `src/scoring/`, both notebooks import it | ~~HIGH~~ |
 | 4 | ~~Hardcoded paths~~ | ~~`scoring-test.ipynb`~~ | **FIXED** — relative paths, new CSV schema, imports from `src/scoring/` | ~~HIGH~~ |
 | 5 | Two CSV schemas coexist | `data/processed/` | Both files are used correctly now; old `edge_scores.csv` can be removed once confirmed unnecessary | MEDIUM |
-| 6 | ~~No design doc in repo~~ | ~~(missing)~~ | **FIXED** — `docs/design_document.md` created (410 lines) | ~~MEDIUM~~ |
+| 6 | ~~No design doc in repo~~ | ~~(missing)~~ | **FIXED** — `docs/design_document.md` created (424 lines) | ~~MEDIUM~~ |
 | 7 | 493 crime outlier points | `crime_final_gdf.gpkg` | Requires geocoding re-investigation | MEDIUM |
 | 8 | Walkability row count discrepancy | `walkability_final_gdf.gpkg` | Need to check notebook vs doc claim | MEDIUM |
 | 9 | 14.1% unscored edges | graph + edge_scores gap | May require scoring-engine re-run or handling strategy | MEDIUM |
-| 10 | ~~Bike lane data missing~~ | (not started) | **Deferred** — team decided to drop bike lanes from this iteration; may revisit in future version | ~~MEDIUM~~ |
+| 10 | ~~Bike lane data missing~~ | (not started) | **Not in scope** -- bike lanes are listed as a potential future data source in the design doc, not a current deliverable | ~~MEDIUM~~ |
 | 11 | ~~conda environment not documented~~ | ~~README~~ | **FIXED** — README now has conda + pip setup | ~~LOW~~ |
 | 12 | No presentation slides | (not created) | Week 8 deliverable | LOW |
 
