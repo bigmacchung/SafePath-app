@@ -18,11 +18,11 @@ This is a quarter long student data science project run through [DS3 at UC San D
 | 2 | [`docs/design_document.md`](docs/design_document.md) | Data pipeline, scoring methodology, design decisions |
 | 3 | [`docs/status.md`](docs/status.md) | Who is doing what, meeting log |
 
-For meeting notes, see the team [Google Drive](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing) and [GitHub workshop slides](https://docs.google.com/presentation/d/1WPHBVzyirhDXo6mF61rogD_oO6OWuwoV/edit?slide=id.p1#slide=id.p1). Quick chat is on Discord.
+For meeting notes, see the team [Meeting Minutes](https://docs.google.com/document/d/1p8XB5TivfCse7hsoDEnvBlG550-bUM90RY1NgzljXaY/edit?tab=t.0#heading=h.6yf6onvsp2r5),[Design Doc](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing) and [GitHub workshop slides](https://docs.google.com/presentation/d/1WPHBVzyirhDXo6mF61rogD_oO6OWuwoV/edit?slide=id.p1#slide=id.p1).
 
 ## Environment setup
 
-SafePath uses geospatial libraries (OSMnx, GeoPandas) that depend on C libraries. We recommend conda for a clean install.
+SafePath uses geospatial libraries (OSMnx, GeoPandas etc.) that depend on C libraries. We recommend conda for a clean install.
 
 **Option A: conda (recommended)**
 
