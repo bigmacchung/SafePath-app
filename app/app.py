@@ -20,47 +20,13 @@ st.set_page_config(
 )
 
 # ---- Session state ----
-st.session_state.setdefault("pending_find", False)
-st.session_state.setdefault("dark_resolved", False)
-st.session_state.setdefault("use_extra_caution", False)
+st.session_state.setdefault("step", "pick")  # pick → choose → results
+st.session_state.setdefault("route_mode", None)  # "caution" or "faster"
 
 
 def _is_after_dark() -> bool:
     hour = datetime.now().hour
     return hour >= 18 or hour < 6
-
-
-@st.dialog("It's after dark")
-def _dark_caution_dialog():
-    st.markdown(
-        ":material/dark_mode: **Do you want to use Extra Caution for this trip?**"
-    )
-    st.write(
-        "It's currently after dark in San Diego. "
-        "Extra Caution switches to night scoring, which prioritizes "
-        "well-lit streets and uses nighttime crime patterns."
-    )
-    st.divider()
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button(
-            ":material/shield: Yes, extra caution",
-            type="primary",
-            use_container_width=True,
-            key="dark_yes",
-        ):
-            st.session_state.use_extra_caution = True
-            st.session_state.dark_resolved = True
-            st.rerun()
-    with c2:
-        if st.button(
-            "No, keep day mode",
-            use_container_width=True,
-            key="dark_no",
-        ):
-            st.session_state.use_extra_caution = False
-            st.session_state.dark_resolved = True
-            st.rerun()
 
 
 # ---- Sidebar ----
@@ -73,10 +39,6 @@ with st.sidebar:
     preset_names = list(PRESETS.keys())
     start_name = st.selectbox("Start", preset_names, index=0, key="start")
     end_name = st.selectbox("Destination", preset_names, index=1, key="end")
-
-    st.divider()
-
-    is_night = st.toggle(":material/dark_mode: Night mode", value=False)
 
     st.divider()
 
@@ -94,31 +56,87 @@ with st.sidebar:
 # ---- Load graph (cached after first run) ----
 G = load_graph()
 
-# ---- Handle Find Routes click ----
+# ---- Step 1: User clicks Find Routes ----
 if find:
     if start_name == end_name:
         st.error("Start and destination must be different.")
         st.stop()
-    st.session_state.pending_find = True
-    st.session_state.dark_resolved = False
-    st.session_state.use_extra_caution = False
     st.session_state.find_start = start_name
     st.session_state.find_end = end_name
-    st.session_state.find_night_toggle = is_night
+    st.session_state.route_mode = None
+    if "routes" in st.session_state:
+        del st.session_state.routes
+    if "meta" in st.session_state:
+        del st.session_state.meta
+    st.session_state.step = "choose"
 
-# ---- Dark caution check ----
-if st.session_state.pending_find and not st.session_state.dark_resolved:
-    if _is_after_dark() and not st.session_state.get("find_night_toggle", False):
-        _dark_caution_dialog()
+# ---- Step 2: Choose route mode ----
+if st.session_state.step == "choose":
+    sn = st.session_state.get("find_start", preset_names[0])
+    en = st.session_state.get("find_end", preset_names[1])
+
+    after_dark = _is_after_dark()
+    now_str = datetime.now().strftime("%-I:%M %p")
+
+    st.markdown("---")
+    if after_dark:
+        st.warning(
+            f":material/dark_mode: **It's after dark** ({now_str}). "
+            "Do you want to use Extra Caution for this trip?",
+            icon=":material/dark_mode:",
+        )
     else:
-        st.session_state.dark_resolved = True
+        st.info(
+            f":material/wb_sunny: It's currently {now_str}. "
+            "How would you like to walk?",
+            icon=":material/wb_sunny:",
+        )
 
-# ---- Compute routes once dark check is resolved ----
-if st.session_state.pending_find and st.session_state.dark_resolved:
+    st.markdown(f"**{sn}** :material/arrow_forward: **{en}**")
+    st.write("")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        with st.container(border=True):
+            st.markdown(":material/shield: **Extra Caution**")
+            st.caption(
+                "Prioritizes well-lit streets, avoids high-crime areas. "
+                "Uses nighttime safety scoring. May add distance."
+            )
+            if st.button(
+                ":material/shield: Extra Caution",
+                use_container_width=True,
+                type="primary" if after_dark else "secondary",
+                key="btn_caution",
+            ):
+                st.session_state.route_mode = "caution"
+                st.session_state.step = "compute"
+                st.rerun()
+    with c2:
+        with st.container(border=True):
+            st.markdown(":material/speed: **Faster Route**")
+            st.caption(
+                "Shortest walking distance with basic safety scoring. "
+                "Uses daytime weights. Gets you there quickly."
+            )
+            if st.button(
+                ":material/speed: Faster Route",
+                use_container_width=True,
+                type="secondary" if after_dark else "primary",
+                key="btn_faster",
+            ):
+                st.session_state.route_mode = "faster"
+                st.session_state.step = "compute"
+                st.rerun()
+
+    st.stop()
+
+# ---- Step 3: Compute routes ----
+if st.session_state.step == "compute":
     sn = st.session_state.find_start
     en = st.session_state.find_end
-    night_toggle = st.session_state.get("find_night_toggle", False)
-    effective_night = night_toggle or st.session_state.use_extra_caution
+    mode = st.session_state.route_mode
+    is_night = mode == "caution"
 
     start_coords = PRESETS[sn]
     end_coords = PRESETS[en]
@@ -127,7 +145,7 @@ if st.session_state.pending_find and st.session_state.dark_resolved:
     dest = snap_to_nearest(G, *end_coords)
 
     with st.spinner("Computing routes..."):
-        routes = compute_routes(G, orig, dest, effective_night)
+        routes = compute_routes(G, orig, dest, is_night)
 
     st.session_state.routes = routes
     st.session_state.meta = {
@@ -135,12 +153,13 @@ if st.session_state.pending_find and st.session_state.dark_resolved:
         "end_coords": end_coords,
         "start_name": sn,
         "end_name": en,
-        "is_night": effective_night,
-        "extra_caution": st.session_state.use_extra_caution,
+        "is_night": is_night,
+        "route_mode": mode,
     }
-    st.session_state.pending_find = False
+    st.session_state.step = "results"
+    st.rerun()
 
-# ---- Default view ----
+# ---- Default view (no routes yet) ----
 if "routes" not in st.session_state:
     m = folium.Map(
         location=[32.7400, -117.1500],
@@ -160,16 +179,22 @@ if "routes" not in st.session_state:
     st.info("Select a start and destination, then click **Find Routes**.")
     st.stop()
 
-# ---- Display results from session state ----
+# ---- Display results ----
 routes = st.session_state.routes
 meta = st.session_state.meta
 
-# Extra caution banner
-if meta.get("extra_caution"):
+# Mode banner
+if meta["route_mode"] == "caution":
     st.warning(
-        ":material/shield: **Extra Caution is on.** "
-        "Routes use night scoring (well-lit streets, nighttime crime weights).",
+        ":material/shield: **Extra Caution** — routes use night scoring "
+        "(well-lit streets, nighttime crime weights).",
         icon=":material/dark_mode:",
+    )
+else:
+    st.info(
+        ":material/speed: **Faster Route** — routes use daytime scoring "
+        "(shortest distance with basic safety).",
+        icon=":material/wb_sunny:",
     )
 
 center = [
@@ -219,9 +244,7 @@ st.divider()
 # ---- Route comparison cards ----
 st.subheader("Route Comparison")
 
-time_label = "Night" if meta["is_night"] else "Day"
-if meta.get("extra_caution"):
-    time_label += " (Extra Caution)"
+time_label = "Extra Caution (Night)" if meta["is_night"] else "Faster (Day)"
 st.caption(f"Profile: {time_label}")
 
 cols = st.columns(3)
