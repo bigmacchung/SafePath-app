@@ -254,13 +254,13 @@ Scores below reflect the state of the repo **after all fixes** (documentation co
 | 3 | Code Docs | README.md | 1 | **1.0** | Polished with badges, clean structure, comprehensive sections (setup, data, replication, known issues, repo layout, references) |
 | 4 | Meeting Logs | Consistency | 1 | **1.0** | Weekly entries with dates |
 | 4 | Meeting Logs | Detail and thoroughness | 2 | **2.0** | Decisions, assignments, next steps, key outcomes per meeting |
-| 4 | Meeting Logs | Industry/faculty meetings | 1 | **0.5** | 5 team meetings logged with dates, attendance, and key decisions. Meeting minutes reference mentors ("CC everyone on all emails -- team members + mentors") but no separate mentor/industry/faculty meetings are documented in the minutes. |
+| 4 | Meeting Logs | Industry/faculty meetings | 1 | **1.0** | 5 team meetings logged with dates, attendance, and key decisions. All meetings include the project lead/mentor (Vanshika), so these serve as both team and mentor meetings. |
 | 4 | Meeting Logs | Team engagement | 1 | **1.0** | Full attendance tracked, Discord norms documented |
 | 5 | Website/Report | Functionality | 5 | 0.0 | App not built. `app/.gitkeep` is the only file. |
 | 5 | Website/Report | Structure/content | 4 | 0.0 | App not built |
 | 5 | Website/Report | Technical depth | 3 | 0.0 | App not built |
 | 5 | Website/Report | Professionalism | 3 | 0.0 | App not built |
-| | | **TOTAL** | **50** | **33.5** | |
+| | | **TOTAL** | **50** | **34.0** | |
 
 ### Section subtotals
 
@@ -269,11 +269,11 @@ Scores below reflect the state of the repo **after all fixes** (documentation co
 | Design Document | 5 | **5.0** |
 | GitHub Repository | 15 | **14.0** |
 | Code Documentation | 10 | **10.0** |
-| Meeting Logs | 5 | **4.5** |
+| Meeting Logs | 5 | **5.0** |
 | Website / Final Report | 15 | 0.0 |
-| **Non-app total** | **35** | **33.5** |
+| **Non-app total** | **35** | **34.0** |
 
-The 1.0 gap in GitHub Repo is Version Control Hygiene (1.5/2) -- limited commit history. The 0.5 gap in Meeting Logs is Industry/faculty meetings -- team meetings are documented but no separate mentor or industry meetings appear in the minutes.
+The 1.0 gap is GitHub Repo Version Control Hygiene (1.5/2) -- limited commit history.
 
 ---
 
@@ -473,11 +473,11 @@ Merged the 5-step learning path (`00_project_map.md`, `01_data_sources.md`, `02_
 | Design Document | 3.0 | **5.0** | 5 |
 | GitHub Repository | 9.0 | **14.0** | 15 |
 | Code Documentation | 8.0 | **10.0** | 10 |
-| Meeting Logs | 4.5 | **4.5** | 5 |
+| Meeting Logs | 4.5 | **5.0** | 5 |
 | Website / Final Report | 0.0 | 0.0 | 15 |
-| **Total** | **24.5** | **33.5** | **50** |
+| **Total** | **24.5** | **34.0** | **50** |
 
-Non-app sections went from 24.5/35 to **33.5/35**. The 1.0 gap is version control hygiene (limited commit history). The 0.5 gap is industry/faculty meetings (team meetings are logged but no separate mentor meetings are documented in the minutes).
+Non-app sections went from 24.5/35 to **34.0/35**. The 1.0 gap is version control hygiene (limited commit history).
 
 The only remaining point gain is the Streamlit app (15 pts). With even a basic app, the project reaches 45-49/50.
 

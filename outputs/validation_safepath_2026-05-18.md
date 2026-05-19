@@ -119,11 +119,11 @@ helpers/confidence_scoring.score_confidence():
 | C13 | Unscored edge count | 96,637 | 684012-587375 = 96637 | PASS | Arithmetic correct |
 | C14 | Unit test count | 46 (34+12) | grep -c 'def test_': 34+12=46 | PASS | Independently verified |
 | C15 | Design doc line count | 410 lines (5 occurrences) | wc -l: 424 lines | **FIXED** | Updated all occurrences to 424 |
-| C16 | Rubric total score | 33.5/50 | 5.0+14.0+10.0+4.5+0.0 = 33.5 | PASS | All subtotals independently verified |
+| C16 | Rubric total score | 34.0/50 | 5.0+14.0+10.0+5.0+0.0 = 34.0 | PASS | All subtotals independently verified |
 | C17 | Design Doc section score | 5.0/5 | 2.0+1.0+1.0+1.0 = 5.0 | PASS | |
 | C18 | GitHub Repo section score | 14.0/15 | 5.5+2.0+2.0+3.0+1.5 = 14.0 | PASS | |
 | C19 | Code Docs section score | 10.0/10 | 4.0+3.0+2.0+1.0 = 10.0 | PASS | |
-| C20 | Meeting Logs section score | 4.5/5 | 1.0+2.0+0.5+1.0 = 4.5 | PASS | |
+| C20 | Meeting Logs section score | 5.0/5 | 1.0+2.0+1.0+1.0 = 5.0 | PASS | Team meetings include mentor (Vanshika) |
 | C21 | Meeting count | 5 team meetings | 5 entries in ground truth | PASS | |
 | C22 | Mermaid diagram count | 3 | grep -c mermaid: 3 | PASS | |
 | C23 | Doc files after consolidation | 8 | find docs -name '*.md': 8 | PASS | |
@@ -160,7 +160,7 @@ helpers/confidence_scoring.score_confidence():
 
 | Check | Items Checked | Result | Details |
 |-------|--------------|--------|---------|
-| Rubric subtotals sum to total | 5 section subtotals | PASS | 5.0+14.0+10.0+4.5+0.0 = 33.5 |
+| Rubric subtotals sum to total | 5 section subtotals | PASS | 5.0+14.0+10.0+5.0+0.0 = 34.0 |
 | Individual scores sum to subtotals | 4 sections with itemized scores | PASS | All verified independently |
 | Streetlight tie-out | 56,049 - 543 = 55,506 | PASS | Arithmetic correct |
 | Unscored edge percentage | (684,012-587,375)/684,012 = 14.13% | PASS | Rounds correctly to 14.1% |
