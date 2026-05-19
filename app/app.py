@@ -345,24 +345,24 @@ for i, (name, route) in enumerate(routes.items()):
             st.warning(f"No {name.lower()} route found.")
 
 # ---- Trade-off summary ----
-safest = routes.get("Safest")
-shortest = routes.get("Shortest")
-if safest and shortest and safest["distance_km"] != shortest["distance_km"]:
+caution = routes.get("Extra Caution")
+fastest = routes.get("Fastest")
+if caution and fastest and caution["distance_km"] != fastest["distance_km"]:
     st.divider()
-    extra_km = safest["distance_km"] - shortest["distance_km"]
-    extra_min = safest["walk_min"] - shortest["walk_min"]
-    safety_diff = safest["safety_score"] - shortest["safety_score"]
+    extra_km = caution["distance_km"] - fastest["distance_km"]
+    extra_min = caution["walk_min"] - fastest["walk_min"]
+    safety_diff = caution["safety_score"] - fastest["safety_score"]
 
     if extra_km > 0:
         st.info(
-            f"The safest route adds **{extra_km:.1f} km** "
+            f"The extra caution route adds **{extra_km:.1f} km** "
             f"(+{extra_min:.0f} min) but scores "
             f"**{safety_diff:+.0%}** higher on safety."
         )
     elif extra_km < 0:
         st.success(
-            "The safest route is shorter than the distance-only route "
-            "because the shortest path crosses high-penalty edges."
+            "The extra caution route is shorter than the fastest route "
+            "because the fastest path crosses high-penalty edges."
         )
 
 # ---- Disclaimer ----

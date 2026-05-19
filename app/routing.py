@@ -44,9 +44,9 @@ EXAMPLE_ADDRESSES = [
 ]
 
 ROUTE_COLORS = {
-    "Safest": "#27ae60",
+    "Extra Caution": "#27ae60",
     "Balanced": "#f39c12",
-    "Shortest": "#3498db",
+    "Fastest": "#3498db",
 }
 
 
@@ -169,9 +169,9 @@ def snap_to_nearest(G, lat: float, lon: float) -> str:
 def compute_routes(G, orig: str, dest: str, is_night: bool) -> dict:
     t = "night" if is_night else "day"
     profiles = {
-        "Safest": f"cost_safety_{t}",
+        "Extra Caution": f"cost_safety_{t}",
         "Balanced": f"cost_balanced_{t}",
-        "Shortest": "cost_shortest",
+        "Fastest": "cost_shortest",
     }
     results = {}
     for name, weight in profiles.items():
