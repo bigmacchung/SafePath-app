@@ -78,6 +78,13 @@ with st.sidebar:
     st.title(":material/directions_walk: SafePath")
     st.caption("Safer walking routes in San Diego")
 
+    sun = _get_sun_times()
+    if sun:
+        st.caption(
+            f":material/wb_sunny: Sunrise {sun['sunrise']}  \n"
+            f":material/dark_mode: Sunset {sun['sunset']}"
+        )
+
     st.divider()
 
     start_addr = st.text_input(
