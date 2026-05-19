@@ -1,12 +1,9 @@
 """Unit tests for src/scoring — cost formulas, weight profiles, road class scores."""
 import math
-import sys
-from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from scoring import (
+from src.scoring import (
     ROAD_CLASS_SCORES,
     DAY_WEIGHTS,
     NIGHT_WEIGHTS,
