@@ -1,4 +1,4 @@
-"""Graph loading, route computation, and nearest-node lookup."""
+"""Graph loading, route computation, geocoding, and nearest-node lookup."""
 from __future__ import annotations
 
 import gzip
@@ -9,6 +9,8 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import streamlit as st
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 from scoring import (
     composite_score,
@@ -25,24 +27,59 @@ RAW_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
 GRAPH_PATH = RAW_DATA_DIR / "sd_walk_graph.graphml"
 SCORES_PATH = RAW_DATA_DIR / "edge_scores_infrastructure.csv"
 
-PRESETS = {
-    "Downtown — Gaslamp Quarter": (32.7112, -117.1601),
-    "Downtown — Santa Fe Depot": (32.7194, -117.1709),
-    "Balboa Park": (32.7316, -117.1448),
-    "Hillcrest": (32.7490, -117.1630),
-    "North Park": (32.7474, -117.1295),
-    "Normal Heights": (32.7625, -117.1160),
-    "Pacific Beach": (32.7966, -117.2536),
-    "Ocean Beach": (32.7480, -117.2490),
-    "City Heights": (32.7430, -117.1080),
-    "Golden Hill": (32.7190, -117.1380),
-}
+# San Diego bounding box for geocoding validation
+SD_BOUNDS = {"min_lat": 32.53, "max_lat": 33.12, "min_lon": -117.33, "max_lon": -116.90}
+
+EXAMPLE_ADDRESSES = [
+    "Gaslamp Quarter, San Diego",
+    "Balboa Park, San Diego",
+    "Hillcrest, San Diego",
+    "North Park, San Diego",
+    "Pacific Beach, San Diego",
+    "Ocean Beach, San Diego",
+    "Normal Heights, San Diego",
+    "City Heights, San Diego",
+    "Golden Hill, San Diego",
+    "Little Italy, San Diego",
+]
 
 ROUTE_COLORS = {
     "Safest": "#27ae60",
     "Balanced": "#f39c12",
     "Shortest": "#3498db",
 }
+
+
+@st.cache_data(show_spinner=False)
+def geocode_address(address: str) -> dict | None:
+    """Geocode an address to lat/lon within San Diego.
+
+    Returns {"lat": ..., "lon": ..., "display": ...} or None if not found.
+    """
+    if not address or not address.strip():
+        return None
+
+    query = address.strip()
+    if "san diego" not in query.lower() and "sd" not in query.lower():
+        query += ", San Diego, CA"
+
+    try:
+        geolocator = Nominatim(user_agent="safepath-app", timeout=5)
+        location = geolocator.geocode(query, exactly_one=True)
+    except (GeocoderTimedOut, GeocoderUnavailable):
+        return None
+
+    if location is None:
+        return None
+
+    lat, lon = location.latitude, location.longitude
+    if not (
+        SD_BOUNDS["min_lat"] <= lat <= SD_BOUNDS["max_lat"]
+        and SD_BOUNDS["min_lon"] <= lon <= SD_BOUNDS["max_lon"]
+    ):
+        return None
+
+    return {"lat": lat, "lon": lon, "display": location.address}
 
 
 def _safe_float(val, default=NEUTRAL_SCORE):

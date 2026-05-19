@@ -11,7 +11,8 @@ from routing import (
     load_graph,
     snap_to_nearest,
     compute_routes,
-    PRESETS,
+    geocode_address,
+    EXAMPLE_ADDRESSES,
     ROUTE_COLORS,
 )
 
@@ -79,9 +80,20 @@ with st.sidebar:
 
     st.divider()
 
-    preset_names = list(PRESETS.keys())
-    start_name = st.selectbox("Start", preset_names, index=0, key="start")
-    end_name = st.selectbox("Destination", preset_names, index=1, key="end")
+    start_addr = st.text_input(
+        "Start address",
+        placeholder="e.g. Gaslamp Quarter, San Diego",
+        key="start_addr",
+    )
+    end_addr = st.text_input(
+        "Destination address",
+        placeholder="e.g. Balboa Park, San Diego",
+        key="end_addr",
+    )
+
+    with st.expander("Example addresses"):
+        for addr in EXAMPLE_ADDRESSES:
+            st.caption(addr)
 
     st.divider()
 
@@ -99,13 +111,30 @@ with st.sidebar:
 # ---- Load graph (cached after first run) ----
 G = load_graph()
 
-# ---- Step 1: User clicks Find Routes ----
+# ---- Step 1: User clicks Find Routes → geocode addresses ----
 if find:
-    if start_name == end_name:
+    if not start_addr or not end_addr:
+        st.error("Enter both a start and destination address.")
+        st.stop()
+    if start_addr.strip().lower() == end_addr.strip().lower():
         st.error("Start and destination must be different.")
         st.stop()
-    st.session_state.find_start = start_name
-    st.session_state.find_end = end_name
+
+    with st.spinner("Looking up addresses..."):
+        geo_start = geocode_address(start_addr)
+        geo_end = geocode_address(end_addr)
+
+    if geo_start is None:
+        st.error(f"Could not find **{start_addr}** in San Diego.")
+        st.stop()
+    if geo_end is None:
+        st.error(f"Could not find **{end_addr}** in San Diego.")
+        st.stop()
+
+    st.session_state.find_start = geo_start["display"]
+    st.session_state.find_end = geo_end["display"]
+    st.session_state.start_coords = (geo_start["lat"], geo_start["lon"])
+    st.session_state.end_coords = (geo_end["lat"], geo_end["lon"])
     st.session_state.route_mode = None
     if "routes" in st.session_state:
         del st.session_state.routes
@@ -115,8 +144,8 @@ if find:
 
 # ---- Step 2: Choose route mode ----
 if st.session_state.step == "choose":
-    sn = st.session_state.get("find_start", preset_names[0])
-    en = st.session_state.get("find_end", preset_names[1])
+    sn = st.session_state.get("find_start", "")
+    en = st.session_state.get("find_end", "")
 
     after_dark = _is_after_dark()
     now_str = datetime.now(PT).strftime("%-I:%M %p")
@@ -189,8 +218,8 @@ if st.session_state.step == "compute":
     mode = st.session_state.route_mode
     is_night = mode == "caution"
 
-    start_coords = PRESETS[sn]
-    end_coords = PRESETS[en]
+    start_coords = st.session_state.start_coords
+    end_coords = st.session_state.end_coords
 
     orig = snap_to_nearest(G, *start_coords)
     dest = snap_to_nearest(G, *end_coords)
@@ -217,17 +246,8 @@ if "routes" not in st.session_state:
         zoom_start=13,
         tiles="CartoDB positron",
     )
-    for name, (lat, lon) in PRESETS.items():
-        folium.CircleMarker(
-            [lat, lon],
-            radius=6,
-            color="#3498db",
-            fill=True,
-            fill_opacity=0.7,
-            tooltip=name,
-        ).add_to(m)
     st_folium(m, use_container_width=True, height=600, key="default_map")
-    st.info("Select a start and destination, then click **Find Routes**.")
+    st.info("Type a start and destination address in San Diego, then click **Find Routes**.")
     st.stop()
 
 # ---- Display results ----
