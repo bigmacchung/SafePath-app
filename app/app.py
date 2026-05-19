@@ -23,16 +23,14 @@ st.set_page_config(
 )
 
 # ---- Session state ----
-st.session_state.setdefault("step", "pick")  # pick → choose → results
-st.session_state.setdefault("route_mode", None)  # "caution" or "faster"
+st.session_state.setdefault("step", "pick")
+st.session_state.setdefault("route_mode", None)
 
-
-PT = timezone(timedelta(hours=-7))  # San Diego is UTC-7 (PDT)
+PT = timezone(timedelta(hours=-7))
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
 def _get_sun_times() -> dict | None:
-    """Fetch today's sunrise/sunset for San Diego. Cached for 24 hours."""
     try:
         url = (
             "https://api.sunrise-sunset.org/json"
@@ -79,30 +77,41 @@ with st.sidebar:
     st.caption("Safer walking routes in San Diego")
 
     sun = _get_sun_times()
-    if sun:
-        st.caption(
-            f":material/wb_sunny: Sunrise {sun['sunrise']}  \n"
-            f":material/dark_mode: Sunset {sun['sunset']}"
-        )
+    now_str = datetime.now(PT).strftime("%-I:%M %p")
+    after_dark = _is_after_dark()
+
+    with st.container(border=True):
+        if after_dark:
+            st.markdown(
+                f":material/dark_mode: **{now_str}** — After dark"
+            )
+        else:
+            st.markdown(
+                f":material/wb_sunny: **{now_str}** — Daytime"
+            )
+        if sun:
+            st.caption(
+                f"Dawn {sun['sunrise']}  /  Dusk {sun['sunset']}"
+            )
 
     st.divider()
 
     start_addr = st.text_input(
-        "Start address",
+        ":material/location_on: Start address",
         placeholder="e.g. Gaslamp Quarter, San Diego",
         key="start_addr",
     )
     end_addr = st.text_input(
-        "Destination address",
+        ":material/flag: Destination",
         placeholder="e.g. Balboa Park, San Diego",
         key="end_addr",
     )
 
-    with st.expander("Example addresses"):
+    with st.expander(":material/list: Example addresses"):
         for addr in EXAMPLE_ADDRESSES:
             st.caption(addr)
 
-    st.divider()
+    st.write("")
 
     find = st.button(
         ":material/route: Find Routes",
@@ -111,32 +120,41 @@ with st.sidebar:
     )
 
     st.divider()
-    st.caption("Scores: 0 = worst, 1 = best")
-    st.caption("Data: SDPD calls, EPA walkability, city streetlights")
-    st.caption("SafePath team — DS3 @ UC San Diego")
+
+    with st.expander(":material/info: About"):
+        st.caption("**Scoring**: 0 = worst, 1 = best")
+        st.caption("**Data**: SDPD calls, EPA walkability, city streetlights")
+        st.caption("**Team**: DS3 @ UC San Diego")
 
 # ---- Load graph (cached after first run) ----
 G = load_graph()
 
-# ---- Step 1: User clicks Find Routes → geocode addresses ----
+# ---- Step 1: User clicks Find Routes → geocode + validate ----
 if find:
     if not start_addr or not end_addr:
-        st.error("Enter both a start and destination address.")
+        st.error("Enter both a start and destination address.", icon=":material/error:")
         st.stop()
     if start_addr.strip().lower() == end_addr.strip().lower():
-        st.error("Start and destination must be different.")
+        st.error("Start and destination must be different.", icon=":material/error:")
         st.stop()
 
-    with st.spinner("Looking up addresses..."):
+    with st.status("Finding your route...", expanded=True) as status:
+        st.write(":material/search: Looking up addresses...")
         geo_start = geocode_address(start_addr)
         geo_end = geocode_address(end_addr)
 
-    if geo_start is None:
-        st.error(f"Could not find **{start_addr}** in San Diego.")
-        st.stop()
-    if geo_end is None:
-        st.error(f"Could not find **{end_addr}** in San Diego.")
-        st.stop()
+        if geo_start is None:
+            status.update(label="Address not found", state="error")
+            st.error(f"Could not find **{start_addr}** in San Diego.")
+            st.stop()
+        if geo_end is None:
+            status.update(label="Address not found", state="error")
+            st.error(f"Could not find **{end_addr}** in San Diego.")
+            st.stop()
+
+        st.write(f":material/check_circle: Found **{geo_start['display'][:60]}**")
+        st.write(f":material/check_circle: Found **{geo_end['display'][:60]}**")
+        status.update(label="Addresses found", state="complete", expanded=False)
 
     st.session_state.find_start = geo_start["display"]
     st.session_state.find_end = geo_end["display"]
@@ -153,33 +171,28 @@ if find:
 if st.session_state.step == "choose":
     sn = st.session_state.get("find_start", "")
     en = st.session_state.get("find_end", "")
-
     after_dark = _is_after_dark()
-    now_str = datetime.now(PT).strftime("%-I:%M %p")
-    sun = _get_sun_times()
 
-    st.markdown("---")
-    if after_dark:
-        st.warning(
-            f":material/dark_mode: **It's after dark** ({now_str}). "
-            "Do you want to use Extra Caution for this trip?",
-            icon=":material/dark_mode:",
-        )
-    else:
-        st.info(
-            f":material/wb_sunny: It's currently {now_str}. "
-            "How would you like to walk?",
-            icon=":material/wb_sunny:",
-        )
+    with st.container(border=True):
+        if after_dark:
+            st.warning(
+                ":material/dark_mode: **It's after dark.** "
+                "Do you want to use Extra Caution for this trip?",
+                icon=":material/dark_mode:",
+            )
+        else:
+            st.info(
+                ":material/wb_sunny: **Daytime walking.** "
+                "How would you like to walk?",
+                icon=":material/wb_sunny:",
+            )
 
-    if sun:
-        st.caption(
-            f":material/wb_sunny: Sunrise {sun['sunrise']}  "
-            f":material/dark_mode: Sunset {sun['sunset']}  "
-            f"— San Diego"
+        st.markdown(
+            f":material/location_on: **{sn}**  \n"
+            f":material/arrow_downward:  \n"
+            f":material/flag: **{en}**"
         )
 
-    st.markdown(f"**{sn}** :material/arrow_forward: **{en}**")
     st.write("")
 
     c1, c2 = st.columns(2)
@@ -228,11 +241,16 @@ if st.session_state.step == "compute":
     start_coords = st.session_state.start_coords
     end_coords = st.session_state.end_coords
 
-    orig = snap_to_nearest(G, *start_coords)
-    dest = snap_to_nearest(G, *end_coords)
+    with st.status("Computing routes...", expanded=True) as status:
+        st.write(":material/location_on: Snapping to nearest road...")
+        orig = snap_to_nearest(G, *start_coords)
+        dest = snap_to_nearest(G, *end_coords)
 
-    with st.spinner("Computing routes..."):
+        st.write(":material/route: Running pathfinder (3 profiles)...")
         routes = compute_routes(G, orig, dest, is_night)
+
+        st.write(":material/check_circle: Routes ready!")
+        status.update(label="Routes computed", state="complete", expanded=False)
 
     st.session_state.routes = routes
     st.session_state.meta = {
@@ -248,134 +266,179 @@ if st.session_state.step == "compute":
 
 # ---- Default view (no routes yet) ----
 if "routes" not in st.session_state:
+    st.write("")
+    left, center_col, right = st.columns([1, 2, 1])
+    with center_col:
+        st.markdown(
+            "### :material/directions_walk: Plan a safer walk in San Diego"
+        )
+        st.markdown(
+            "Enter a start and destination in the sidebar, "
+            "then click **Find Routes** to compare three walking profiles."
+        )
+
+        with st.container(border=True):
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.markdown(":material/shield: **Extra Caution**")
+                st.caption("Avoids high-risk areas, prefers lit streets")
+            with c2:
+                st.markdown(":material/balance: **Balanced**")
+                st.caption("Mix of safety and distance")
+            with c3:
+                st.markdown(":material/speed: **Fastest**")
+                st.caption("Shortest walking path")
+
+    st.write("")
     m = folium.Map(
         location=[32.7400, -117.1500],
         zoom_start=13,
         tiles="CartoDB positron",
     )
-    st_folium(m, use_container_width=True, height=600, key="default_map")
-    st.info("Type a start and destination address in San Diego, then click **Find Routes**.")
+    st_folium(m, use_container_width=True, height=500, key="default_map")
     st.stop()
 
 # ---- Display results ----
 routes = st.session_state.routes
 meta = st.session_state.meta
 
-# Mode banner
-if meta["route_mode"] == "caution":
-    st.warning(
-        ":material/shield: **Extra Caution** — routes use night scoring "
-        "(well-lit streets, nighttime crime weights).",
-        icon=":material/dark_mode:",
-    )
-else:
-    st.info(
-        ":material/speed: **Faster Route** — routes use daytime scoring "
-        "(shortest distance with basic safety).",
-        icon=":material/wb_sunny:",
-    )
+# Mode + trip header
+with st.container(border=True):
+    h1, h2 = st.columns([3, 1])
+    with h1:
+        st.markdown(
+            f":material/location_on: **{meta['start_name']}**  \n"
+            f":material/flag: **{meta['end_name']}**"
+        )
+    with h2:
+        if meta["route_mode"] == "caution":
+            st.markdown(":material/shield: **Extra Caution** mode")
+            st.caption("Night scoring active")
+        else:
+            st.markdown(":material/speed: **Faster Route** mode")
+            st.caption("Day scoring active")
 
 center = [
     (meta["start_coords"][0] + meta["end_coords"][0]) / 2,
     (meta["start_coords"][1] + meta["end_coords"][1]) / 2,
 ]
 
-m = folium.Map(location=center, zoom_start=15, tiles="CartoDB positron")
+# Tabs: Map and Comparison (AGENTS.md Layout Components pattern)
+tab_map, tab_compare = st.tabs([
+    ":material/map: Map",
+    ":material/bar_chart: Compare Routes",
+])
 
-for name, route in routes.items():
-    if route:
-        folium.PolyLine(
-            route["coords"],
-            color=ROUTE_COLORS[name],
-            weight=5,
-            opacity=0.8,
-            tooltip=(
-                f"{name}: {route['distance_km']:.1f} km, "
-                f"{route['walk_min']:.0f} min"
-            ),
-        ).add_to(m)
+with tab_map:
+    m = folium.Map(location=center, zoom_start=15, tiles="CartoDB positron")
 
-folium.Marker(
-    meta["start_coords"],
-    tooltip=f"Start: {meta['start_name']}",
-    icon=folium.Icon(color="green", icon="play", prefix="fa"),
-).add_to(m)
-folium.Marker(
-    meta["end_coords"],
-    tooltip=f"End: {meta['end_name']}",
-    icon=folium.Icon(color="red", icon="flag", prefix="fa"),
-).add_to(m)
-
-st_folium(m, use_container_width=True, height=500, key="route_map")
-
-# Legend
-legend_cols = st.columns(3)
-for i, (name, color) in enumerate(ROUTE_COLORS.items()):
-    legend_cols[i].markdown(
-        f"<span style='color:{color}; font-size:1.4em'>&#9679;</span> "
-        f"**{name}**",
-        unsafe_allow_html=True,
-    )
-
-st.divider()
-
-# ---- Route comparison cards ----
-st.subheader("Route Comparison")
-
-time_label = "Extra Caution (Night)" if meta["is_night"] else "Faster (Day)"
-st.caption(f"Profile: {time_label}")
-
-cols = st.columns(3)
-for i, (name, route) in enumerate(routes.items()):
-    with cols[i]:
+    for name, route in routes.items():
         if route:
-            with st.container(border=True):
-                st.markdown(
-                    f"<span style='color:{ROUTE_COLORS[name]}; "
-                    f"font-size:1.2em'>&#9679;</span> **{name}**",
-                    unsafe_allow_html=True,
-                )
-                c1, c2 = st.columns(2)
-                c1.metric("Distance", f"{route['distance_km']:.2f} km")
-                c2.metric("Walk time", f"{route['walk_min']:.0f} min")
-                st.progress(
-                    route["safety_score"],
-                    text=f"Safety: {route['safety_score']:.0%}",
-                )
-                with st.expander("Score breakdown"):
-                    st.markdown(f"Crime: **{route['avg_crime']:.2f}**")
-                    st.markdown(f"Walkability: **{route['avg_walk']:.2f}**")
-                    st.markdown(
-                        f"Infrastructure: **{route['avg_infra']:.2f}**"
-                    )
+            folium.PolyLine(
+                route["coords"],
+                color=ROUTE_COLORS[name],
+                weight=5,
+                opacity=0.8,
+                tooltip=(
+                    f"{name}: {route['distance_km']:.1f} km, "
+                    f"{route['walk_min']:.0f} min"
+                ),
+            ).add_to(m)
+
+    folium.Marker(
+        meta["start_coords"],
+        tooltip=f"Start: {meta['start_name']}",
+        icon=folium.Icon(color="green", icon="play", prefix="fa"),
+    ).add_to(m)
+    folium.Marker(
+        meta["end_coords"],
+        tooltip=f"End: {meta['end_name']}",
+        icon=folium.Icon(color="red", icon="flag", prefix="fa"),
+    ).add_to(m)
+
+    st_folium(m, use_container_width=True, height=500, key="route_map")
+
+    # Legend
+    legend_cols = st.columns(3)
+    for i, (name, color) in enumerate(ROUTE_COLORS.items()):
+        route = routes.get(name)
+        if route:
+            legend_cols[i].markdown(
+                f"<span style='color:{color}; font-size:1.3em'>&#9679;</span> "
+                f"**{name}** — {route['distance_km']:.1f} km, "
+                f"{route['walk_min']:.0f} min",
+                unsafe_allow_html=True,
+            )
         else:
-            st.warning(f"No {name.lower()} route found.")
+            legend_cols[i].markdown(
+                f"<span style='color:{color}; font-size:1.3em'>&#9679;</span> "
+                f"**{name}** — no route",
+                unsafe_allow_html=True,
+            )
 
-# ---- Trade-off summary ----
-caution = routes.get("Extra Caution")
-fastest = routes.get("Fastest")
-if caution and fastest and caution["distance_km"] != fastest["distance_km"]:
-    st.divider()
-    extra_km = caution["distance_km"] - fastest["distance_km"]
-    extra_min = caution["walk_min"] - fastest["walk_min"]
-    safety_diff = caution["safety_score"] - fastest["safety_score"]
+with tab_compare:
+    cols = st.columns(3)
+    for i, (name, route) in enumerate(routes.items()):
+        with cols[i]:
+            if route:
+                with st.container(border=True):
+                    st.markdown(
+                        f"<span style='color:{ROUTE_COLORS[name]}; "
+                        f"font-size:1.2em'>&#9679;</span> **{name}**",
+                        unsafe_allow_html=True,
+                    )
+                    c1, c2 = st.columns(2)
+                    c1.metric(
+                        ":material/straighten: Distance",
+                        f"{route['distance_km']:.2f} km",
+                    )
+                    c2.metric(
+                        ":material/schedule: Walk time",
+                        f"{route['walk_min']:.0f} min",
+                    )
+                    st.progress(
+                        route["safety_score"],
+                        text=f":material/shield: Safety: {route['safety_score']:.0%}",
+                    )
+                    with st.expander(":material/analytics: Score breakdown"):
+                        b1, b2, b3 = st.columns(3)
+                        b1.metric("Crime", f"{route['avg_crime']:.2f}")
+                        b2.metric("Walkability", f"{route['avg_walk']:.2f}")
+                        b3.metric("Infrastructure", f"{route['avg_infra']:.2f}")
+            else:
+                with st.container(border=True):
+                    st.warning(
+                        f"No {name.lower()} route found.",
+                        icon=":material/warning:",
+                    )
 
-    if extra_km > 0:
-        st.info(
-            f"The extra caution route adds **{extra_km:.1f} km** "
-            f"(+{extra_min:.0f} min) but scores "
-            f"**{safety_diff:+.0%}** higher on safety."
-        )
-    elif extra_km < 0:
-        st.success(
-            "The extra caution route is shorter than the fastest route "
-            "because the fastest path crosses high-penalty edges."
-        )
+    # Trade-off summary
+    caution = routes.get("Extra Caution")
+    fastest = routes.get("Fastest")
+    if caution and fastest and caution["distance_km"] != fastest["distance_km"]:
+        st.write("")
+        extra_km = caution["distance_km"] - fastest["distance_km"]
+        extra_min = caution["walk_min"] - fastest["walk_min"]
+        safety_diff = caution["safety_score"] - fastest["safety_score"]
+
+        with st.container(border=True):
+            if extra_km > 0:
+                st.markdown(
+                    f":material/compare_arrows: The extra caution route adds "
+                    f"**{extra_km:.1f} km** (+{extra_min:.0f} min) but scores "
+                    f"**{safety_diff:+.0%}** higher on safety."
+                )
+            elif extra_km < 0:
+                st.markdown(
+                    ":material/check_circle: The extra caution route is shorter "
+                    "than the fastest route because the fastest path crosses "
+                    "high-penalty edges."
+                )
 
 # ---- Disclaimer ----
 st.divider()
 st.caption(
-    "SafePath uses historical SDPD calls, EPA walkability data, and city "
-    "streetlight records. Scores reflect what the data suggests, not a "
+    ":material/info: SafePath uses historical SDPD calls, EPA walkability data, "
+    "and city streetlight records. Scores reflect what the data suggests, not a "
     "guarantee of safety. Always use your own judgment."
 )
