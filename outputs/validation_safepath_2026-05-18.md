@@ -3,7 +3,7 @@
 ## Overall Confidence: HIGH (on scored factors)
 ## Confidence Score: C (100/100 on scored factors, capped by framework)
 
-**Summary:** 40 claims extracted across 4 documents (AUDIT_REPORT.md, design_document.md, status.md, README.md). 37 PASS, 2 FAIL (now fixed), 1 WARN. All meeting facts verified against source meeting minutes. Rubric arithmetic independently confirmed. All file references resolve to existing paths. Data file validation run through `helpers/structural_validator.py`, `helpers/business_rules.py`, `helpers/tieout_helpers.py`, and `helpers/confidence_scoring.py`.
+**Summary:** 40 claims extracted across 4 documents (AUDIT_REPORT.md, design_document.md, status.md, README.md). 37 PASS, 2 FAIL (now fixed), 1 WARN. All meeting facts verified against source meeting minutes. Rubric arithmetic independently confirmed. All file references resolve to existing paths. Data file validation run through `helpers/structural_validator.py`, `helpers/business_rules.py`, `helpers/tieout_helpers.py`, and `helpers/confidence_scoring.py`. Rubric criteria verified against DS3 PROJECTS_RUBRIC.pdf (Deliverables, pages 1-2). All 10 data files profiled via Data Explorer agent (see `outputs/data_inventory_2026-05-18.md`).
 
 **Framework note:** `helpers/confidence_scoring.py` caps the grade at C when validator layers are missing. Two layers (aggregation_consistency, temporal_consistency) are structurally inapplicable: the edge_scores dataset has no date column and no detail-vs-summary hierarchy. All 5 applicable factors score 15/15 (or 10/10 for sample size), totaling 70/70 on scored factors.
 
@@ -183,10 +183,53 @@ helpers/confidence_scoring.score_confidence():
 | 2 | design_document.md | UCSD Clery output file | `ucsd_clery_stats_2022_2024.csv` | "not yet committed to repo" | File does not exist in repo |
 | 3 | status.md | Meeting 3 norms wording | "Discord update after every change" | "text after every update on the Discord" | Match ground truth and norms callout at top of file |
 
+## Rubric PDF Verification
+
+The AUDIT_REPORT rubric table (Section 5) was verified against the official DS3 `PROJECTS_RUBRIC.pdf` (Deliverables Rubric, pages 1-2). All criterion names, point allocations, and section totals match:
+
+| Section | PDF Points | AUDIT_REPORT Points | Criteria Match |
+|---------|-----------|-------------------|----------------|
+| Design Document | 5 (2+1+1+1) | 5 (2+1+1+1) | PASS |
+| GitHub Repository | 15 (6+2+2+3+2) | 15 (6+2+2+3+2) | PASS |
+| Code Documentation | 10 (4+3+2+1) | 10 (4+3+2+1) | PASS |
+| Meeting Logs | 5 (1+2+1+1) | 5 (1+2+1+1) | PASS |
+| Website/Final Report | 15 (5+4+3+3) | 15 (5+4+3+3) | PASS |
+| **Total** | **50** | **50** | **PASS** |
+
+PDF criterion descriptions also match AUDIT_REPORT evidence columns (e.g., "Docstrings & comments with explanations of parameters, return values, and intent" maps to the Documentation in Code score evidence).
+
+---
+
+## Data Explorer Agent Results
+
+Full data profiling results in `outputs/data_inventory_2026-05-18.md`. Key cross-file verification:
+
+| Claim | Documented | Profiled | Status |
+|-------|-----------|----------|--------|
+| Crime row count | 45,742 | 45,742 (gpkg) | PASS |
+| Crime CRS | EPSG:4326 | EPSG:4326 (gpkg) | PASS |
+| Crime outliers outside SD bbox | 493 (1.08%) | 493 with bbox (32.53, 33.12, -117.28, -116.90) | PASS |
+| Walkability row count | 1,462 | 1,462 (gpkg) | PASS |
+| Walkability CBSA | San Diego-Chula Vista-Carlsbad | CBSA 41740, name matches | PASS |
+| NatWalkInd range | 1-20 (EPA scale) | 2.00-19.67 (within expected) | PASS |
+| Streetlights processed | 55,506 | 55,506 features (geojson) | PASS |
+| Streetlights raw | 56,049 | 56,049 features (geojson) | PASS |
+| Graph edges | 684,012 | 684,012 (graphml) | PASS |
+| Graph nodes | -- | 251,999 (graphml) | INFO |
+| Edge scores infra rows | 587,375 | 587,375 (csv) | PASS |
+| Edge scores legacy rows | -- | 684,012 (csv, matches graph) | INFO |
+| Geocode cache entries | 2,673 | 2,673 (json) | PASS |
+| walk_score consistency | same across files | 100% match between CSVs | PASS |
+| Unscored edges | 96,637 | 684,012 - 587,375 = 96,637 | PASS |
+| crime_score evolution | medium ~= old | r = 0.996 (day), 0.995 (night) | PASS |
+
+---
+
 ## Analysis Source
 - **Code:** SafePath repo at `data/practice/SafePath-fix-light-audit/`
 - **Results:** `docs/AUDIT_REPORT.md`, `docs/design_document.md`, `docs/status.md`, `README.md`
 - **Ground truth:** Extracted from meeting minutes and team design doc
+- **Rubric source:** DS3 PROJECTS_RUBRIC.pdf (Deliverables pages 1-2, DinoCage pages 3-4)
 - **Validation date:** 2026-05-18
 - **DAG:** Question Framing (Step 1) -> Data Explorer (Step 4) -> Source Tie-Out (Step 4.5) -> Validation (Step 7)
 - **Agents used:** `agents/question-framing.md`, `agents/data-explorer.md`, `agents/source-tieout.md`, `agents/validation.md`
