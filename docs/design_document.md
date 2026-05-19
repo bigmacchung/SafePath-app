@@ -97,7 +97,7 @@ flowchart TB
 
 **EPA Walkability Index.** One row per Census block group with `NatWalkInd` (1-20 score combining street connectivity, transit, and land use mix). Methodology: [EPA SLD v3.0 PDF](https://www.epa.gov/system/files/documents/2023-10/epa_sld_3.0_technicaldocumentationuserguide_may2021_0.pdf). Merged with Census TIGER polygons so each block group has both a score and a geographic boundary.
 
-**City Streetlights.** Point geometry for every city-maintained light. Snapshot 2026-04-30: 56,049 raw features, 55,506 active after filtering. Full cleaning report: [`docs/data/streetlights/`](data/streetlights/). No additional public streetlight data exists for this region -- see [`EXTERNAL_DATASETS_AUDIT.md`](data/streetlights/EXTERNAL_DATASETS_AUDIT.md) for the 9-source investigation.
+**City Streetlights.** Point geometry for every city-maintained light. Snapshot 2026-04-30: 56,049 raw features, 55,506 active after filtering. Feature spec for planned L1-L5 lighting features: [`FEATURE_CONTRACT.md`](data/streetlights/FEATURE_CONTRACT.md).
 
 **OpenStreetMap.** San Diego walking network: 684,012 edges. Every other dataset gets spatially joined to OSM edges so the routing engine reads scores from one graph.
 
@@ -159,8 +159,6 @@ Pipeline: [`src/data/get_streetlights.py`](../src/data/get_streetlights.py) → 
 3. Flag duplicate `SAPOBJNR` (0 this snapshot). Trim to scoring columns. Save as GeoJSON in EPSG:4326.
 
 **Result:** 55,506 active streetlights. Tie-out: 56,049 - 543 = 55,506.
-
-Full validation report: [`CLEANING_AND_VALIDATION.md`](data/streetlights/CLEANING_AND_VALIDATION.md).
 
 ### Coordinate systems
 
@@ -353,7 +351,7 @@ Raw crime totals follow a power law distribution (downtown outliers compress eve
 
 Only 31.2% of pedestrian edges have a streetlight within 30 m (real `light_score`). The remaining 68.8% use a road-type proxy (`lighting_class_score`). Combining both signals into a single `infrastructure_score` with equal 50/50 weights avoids exposing the two-population split to the routing layer.
 
-**Tradeoff:** For unlit edges, `infrastructure_score` reduces to road-type classification. Edges within the same road class get identical scores regardless of actual conditions. Accepted because no additional public streetlight data exists for this region (see [`EXTERNAL_DATASETS_AUDIT.md`](data/streetlights/EXTERNAL_DATASETS_AUDIT.md) for the full 9-source investigation).
+**Tradeoff:** For unlit edges, `infrastructure_score` reduces to road-type classification. Edges within the same road class get identical scores regardless of actual conditions. Accepted because no additional public streetlight data exists for this region.
 
 ### Why zero-crime edges score 1.0 (perfect)
 
@@ -418,7 +416,5 @@ Be honest about these in any demo or presentation.
 | [SDPD Priority Definitions (PDF)](https://seshat.datasd.org/police_calls_for_service/pd_cfs_priority_defs_datasd.pdf) | Priority levels 0-4 and 9 |
 | [EPA Smart Location Database v3.0](https://www.epa.gov/system/files/documents/2023-10/epa_sld_3.0_technicaldocumentationuserguide_may2021_0.pdf) | NatWalkInd methodology |
 | [OSMnx documentation](https://osmnx.readthedocs.io) | Walking network download and graph operations |
-| [`EXTERNAL_DATASETS_AUDIT.md`](data/streetlights/EXTERNAL_DATASETS_AUDIT.md) | Why no additional streetlight data exists |
 | [`FEATURE_CONTRACT.md`](data/streetlights/FEATURE_CONTRACT.md) | Lighting feature L1-L5 specification |
-| [`CLEANING_AND_VALIDATION.md`](data/streetlights/CLEANING_AND_VALIDATION.md) | Streetlight cleaning validation report |
 | [Original design doc (Google Docs)](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing) | Sprint timeline and initial design intent |

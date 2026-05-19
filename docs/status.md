@@ -4,9 +4,7 @@
 
 > **Team norms ([28 April meeting](https://docs.google.com/document/d/1gufXZGHToZtFlsREL3u_rizqxXCKs3DR3LbKhO05fSc/edit?usp=sharing)):** text after every update on the Discord, and react to every message.
 
-_Last updated: end of Week 6 (2026-05-17). Previous snapshot: [`status/week4_status.md`](status/week4_status.md)._
-
-Past weekly snapshots live in [`status/`](status/). This file is the single source of truth for "where are we right now."
+_Last updated: end of Week 6 (2026-05-17)._ This file is the single source of truth for "where are we right now."
 
 ## This week's owners
 

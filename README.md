@@ -191,6 +191,5 @@ Led by Vanshika, 4 students. This week's owners are tracked in [`docs/status.md`
 | You want to know about | Open |
 | - | - |
 | Data sources, cleaning, features, scoring, design decisions | [`design_document.md`](docs/design_document.md) |
-| Why no additional streetlight data exists | [`EXTERNAL_DATASETS_AUDIT.md`](docs/data/streetlights/EXTERNAL_DATASETS_AUDIT.md) |
 | Streetlight feature spec (L1-L5) | [`FEATURE_CONTRACT.md`](docs/data/streetlights/FEATURE_CONTRACT.md) |
 | What is in flight this week | [`status.md`](docs/status.md) |
