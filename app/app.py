@@ -1,5 +1,7 @@
 """SafePath — safer walking routes in San Diego."""
-from datetime import datetime
+import json
+import urllib.request
+from datetime import datetime, timezone, timedelta
 
 import streamlit as st
 import folium
@@ -24,7 +26,48 @@ st.session_state.setdefault("step", "pick")  # pick → choose → results
 st.session_state.setdefault("route_mode", None)  # "caution" or "faster"
 
 
+PT = timezone(timedelta(hours=-7))  # San Diego is UTC-7 (PDT)
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def _get_sun_times() -> dict | None:
+    """Fetch today's sunrise/sunset for San Diego. Cached for 24 hours."""
+    try:
+        url = (
+            "https://api.sunrise-sunset.org/json"
+            "?lat=32.7157&lng=-117.1611&formatted=0&date=today"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "SafePath/1.0"})
+        resp = urllib.request.urlopen(req, timeout=5)
+        data = json.loads(resp.read())
+        if data.get("status") != "OK":
+            return None
+        r = data["results"]
+        sunrise_utc = datetime.fromisoformat(r["sunrise"])
+        sunset_utc = datetime.fromisoformat(r["sunset"])
+        sunrise_local = sunrise_utc.astimezone(PT)
+        sunset_local = sunset_utc.astimezone(PT)
+        return {
+            "sunrise": sunrise_local.strftime("%-I:%M %p"),
+            "sunset": sunset_local.strftime("%-I:%M %p"),
+            "sunset_hour": sunset_local.hour,
+            "sunrise_hour": sunrise_local.hour,
+        }
+    except Exception:
+        return None
+
+
 def _is_after_dark() -> bool:
+    sun = _get_sun_times()
+    if sun:
+        now = datetime.now(PT)
+        sunset_today = now.replace(
+            hour=sun["sunset_hour"], minute=0, second=0, microsecond=0
+        )
+        sunrise_today = now.replace(
+            hour=sun["sunrise_hour"], minute=0, second=0, microsecond=0
+        )
+        return now >= sunset_today or now < sunrise_today
     hour = datetime.now().hour
     return hour >= 18 or hour < 6
 
@@ -76,7 +119,8 @@ if st.session_state.step == "choose":
     en = st.session_state.get("find_end", preset_names[1])
 
     after_dark = _is_after_dark()
-    now_str = datetime.now().strftime("%-I:%M %p")
+    now_str = datetime.now(PT).strftime("%-I:%M %p")
+    sun = _get_sun_times()
 
     st.markdown("---")
     if after_dark:
@@ -90,6 +134,13 @@ if st.session_state.step == "choose":
             f":material/wb_sunny: It's currently {now_str}. "
             "How would you like to walk?",
             icon=":material/wb_sunny:",
+        )
+
+    if sun:
+        st.caption(
+            f":material/wb_sunny: Sunrise {sun['sunrise']}  "
+            f":material/dark_mode: Sunset {sun['sunset']}  "
+            f"— San Diego"
         )
 
     st.markdown(f"**{sn}** :material/arrow_forward: **{en}**")
